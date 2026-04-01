@@ -1,0 +1,145 @@
+:root {
+  --bg: #f6f4ef;
+  --panel: #fffef9;
+  --ink: #1f1f1f;
+  --muted: #5b5b5b;
+  --accent: #e76f51;
+  --accent-dark: #b84d35;
+  --line: #d7d1c6;
+  --ok: #2a9d8f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 10%, #fde8c8 0%, transparent 35%),
+    radial-gradient(circle at 80% 90%, #c6e4db 0%, transparent 30%),
+    var(--bg);
+}
+
+.layout {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.hero {
+  background: linear-gradient(135deg, #fff6e8 0%, #ffe6dc 100%);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.hero h1 {
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.hero p {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 7px 18px rgba(40, 38, 35, 0.07);
+}
+
+.kpi h2,
+.card h2 {
+  margin: 0 0 10px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.1rem;
+}
+
+.kpi p {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+textarea,
+input,
+button {
+  width: 100%;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+textarea,
+input {
+  border: 1px solid var(--line);
+  padding: 10px;
+  margin: 6px 0 12px;
+  background: #fff;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+button {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 11px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: var(--accent-dark);
+}
+
+.result {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  white-space: pre-wrap;
+  min-height: 44px;
+}
+
+.success {
+  color: var(--ok);
+}
+
+@media (max-width: 900px) {
+  .cards,
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .layout {
+    padding: 16px;
+  }
+}
