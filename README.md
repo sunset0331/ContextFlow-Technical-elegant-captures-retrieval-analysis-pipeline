@@ -16,7 +16,7 @@ Add your images in the `screenshots` folder and keep/replace these paths.
 ![Dashboard Home](screenshots/01-dashboard-home.png)
 ![Upload and Ingest](screenshots/02-upload-ingest.png)
 ![Analysis Output](screenshots/03-analysis-output.png)
-![Charts Updated](screenshots/04-charts-updated.png)
+
 
 If you use different names, just update these links.
 
