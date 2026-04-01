@@ -61,3 +61,6 @@ secrets/
 data/generated_*
 data/*.csv
 data/temp/
+
+INTERVIEW_PROJECT_GUIDE.md
+INTERVIEW_REVISION_SHEET.md
