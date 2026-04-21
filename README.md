@@ -127,14 +127,11 @@ curl -s -X POST http://localhost:8000/api/analyze \
   -d '{"query":"Summarize revenue trend with numbers.","context_query":"mrr revenue churn"}'
 ```
 
-## Notes for Recruiters/Reviewers
+## Notes
 - The system is built with reliability in mind: retrieval fallback and quota fallback reduce hard failures.
 - Uploaded CSV files drive both chart updates and analysis context.
 - Provider settings are env-driven, so model/backend switching does not require core code changes.
 
-## Interview Docs
-- Detailed project guide: `INTERVIEW_PROJECT_GUIDE.md`
-- Quick revision sheet: `INTERVIEW_REVISION_SHEET.md`
 
 ## License
 MIT
