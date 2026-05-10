@@ -22,23 +22,82 @@
 
       <section class="grid cards" id="kpiCards">
         <article class="card kpi">
-          <h2>Revenue Trend</h2>
+          <h2 id="revenueTrendLabel">Revenue Trend</h2>
           <p id="revenueTotal">-</p>
         </article>
         <article class="card kpi">
-          <h2>Indexed Sources</h2>
+          <h2>Time Periods</h2>
           <p id="indexedSources">-</p>
         </article>
       </section>
 
+      <!-- Revenue Chart with Controls -->
       <section class="grid two-col">
         <article class="card chart-card">
-          <h2>Quarterly Revenue (Millions)</h2>
+          <div class="chart-header">
+            <h2>Revenue Analytics</h2>
+            <div class="chart-controls">
+              <select id="periodSelector" class="control-select">
+                <option value="weekly">Weekly</option>
+                <option value="monthly" selected>Monthly</option>
+                <option value="quarterly">Quarterly</option>
+              </select>
+              <div class="chart-type-toggles">
+                <button class="chart-type-btn active" data-chart="line" title="Line Chart">📈</button>
+                <button class="chart-type-btn" data-chart="bar" title="Bar Chart">📊</button>
+                <button class="chart-type-btn" data-chart="area" title="Area Chart">📉</button>
+              </div>
+              <button id="exportRevenueBtn" class="export-btn" title="Export chart">⬇️</button>
+            </div>
+          </div>
           <canvas id="revenueChart"></canvas>
+          <div class="chart-stats" id="revenueStats"></div>
+        </article>
+
+        <article class="card chart-card">
+          <div class="chart-header">
+            <h2>Product Revenue Share (%)</h2>
+            <div class="chart-controls">
+              <div class="chart-type-toggles">
+                <button class="chart-type-btn active" data-chart="doughnut" title="Doughnut">🍩</button>
+                <button class="chart-type-btn" data-chart="pie" title="Pie Chart">🥧</button>
+                <button class="chart-type-btn" data-chart="bar" title="Bar Chart">📊</button>
+              </div>
+              <button id="exportProductBtn" class="export-btn" title="Export chart">⬇️</button>
+            </div>
+          </div>
+          <canvas id="productChart"></canvas>
+        </article>
+      </section>
+
+      <!-- CSV Analysis Section -->
+      <section class="grid">
+        <article class="card">
+          <h2>📊 CSV File Analysis</h2>
+          <div class="csv-selector">
+            <label for="csvFileSelect">Select uploaded CSV file:</label>
+            <select id="csvFileSelect" class="control-select">
+              <option value="">-- Choose a file --</option>
+              <option value="sales_business_data_1000.csv">📊 sales_business_data_1000.csv (1000 rows)</option>
+              <option value="banknnote_data.csv">banknnote_data.csv</option>
+              <option value="channel_only.csv">channel_only.csv</option>
+              <option value="sample_business_metrics.csv">sample_business_metrics.csv</option>
+            </select>
+            <button id="analyzeCsvBtn" class="btn-primary">Analyze File</button>
+          </div>
+          <div id="csvAnalysisResult" class="result"></div>
+        </article>
+      </section>
+
+      <!-- CSV Generated Charts -->
+      <section class="grid two-col" id="csvChartsContainer" style="display: none;">
+        <article class="card chart-card">
+          <h2>Data Distribution</h2>
+          <canvas id="csvDistributionChart"></canvas>
         </article>
         <article class="card chart-card">
-          <h2>Product Revenue Share (%)</h2>
-          <canvas id="productChart"></canvas>
+          <h2>Data Summary</h2>
+          <div id="csvSummaryStats" class="data-summary"></div>
         </article>
       </section>
 
@@ -46,6 +105,14 @@
         <article class="card">
           <h2>Ask the Agent</h2>
           <form id="analyzeForm">
+            <label for="agentFileSelect">Select CSV File (optional)</label>
+            <select id="agentFileSelect" class="control-select">
+              <option value="">-- No file context --</option>
+              <option value="sales_business_data_1000.csv">📊 sales_business_data_1000.csv (1000 rows)</option>
+              <option value="banknnote_data.csv">banknnote_data.csv</option>
+              <option value="channel_only.csv">channel_only.csv</option>
+              <option value="sample_business_metrics.csv">sample_business_metrics.csv</option>
+            </select>
             <label for="query">Analysis Query</label>
             <textarea id="query" required placeholder="What are the key growth opportunities in Q3?"></textarea>
             <label for="contextQuery">Context Query (optional)</label>

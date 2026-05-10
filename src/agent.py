@@ -2,12 +2,13 @@
 
 from typing import Any, Dict, List, Optional
 from langchain.agents import initialize_agent, AgentType
-from langchain_google_genai import ChatGoogleGenerativeAI
+# from langchain_google_genai import ChatGoogleGenerativeAI  # DISABLED: max_retries incompatibility
 from langchain_community.chat_models import ChatOllama
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from config import settings
 from tools import AnalysisTools
+import os
 
 
 class DataAnalysisAgent:
@@ -45,12 +46,22 @@ class DataAnalysisAgent:
                     base_url=settings.deepseek_base_url,
                     temperature=settings.agent_temperature,
                 )
-            else:
-                self.llm = ChatGoogleGenerativeAI(
-                    model=settings.model_name,
-                    google_api_key=settings.google_api_key,
+            elif provider == "huggingface":
+                # Use HuggingFace Qwen2.5-72B-Instruct for superior quality
+                from llm_providers import create_qwen_llm
+                self.llm = create_qwen_llm(
+                    api_key=settings.huggingface_api_key,
+                    model_id=settings.huggingface_model_id,
                     temperature=settings.agent_temperature,
-                    verbose=settings.verbose
+                    verbose=settings.verbose,
+                )
+            else:  # Default to HuggingFace
+                from llm_providers import create_qwen_llm
+                self.llm = create_qwen_llm(
+                    api_key=settings.huggingface_api_key,
+                    model_id=settings.huggingface_model_id,
+                    temperature=settings.agent_temperature,
+                    verbose=settings.verbose,
                 )
             
             # Initialize agent with tools
@@ -151,32 +162,78 @@ class DataAnalysisAgent:
             + "\n- Recommendation: Prioritize metrics with the largest absolute change and validate root causes with a deeper slice by region/channel."
         )
     
-    def analyze(self, query: str, context_query: Optional[str] = None) -> str:
+    def analyze(self, query: str, context_query: Optional[str] = None, file: Optional[str] = None) -> str:
         """
         Run the analysis agent on a query.
         
         Args:
             query: Main analysis query
             context_query: Optional query to retrieve relevant context first
+            file: Optional CSV file name to include in context
             
         Returns:
             Agent response and analysis
         """
         try:
             provider = settings.llm_provider.lower()
-            if provider == "ollama" or settings.single_call_mode:
+            # Use direct LLM call for ollama, huggingface, and single_call_mode
+            if provider in ["ollama", "huggingface"] or settings.single_call_mode:
                 context = ""
                 if context_query:
                     context = self.rag_pipeline.get_context(context_query)
+                
+                # Add file context if specified
+                file_context = ""
+                if file:
+                    file_path = f"../data/uploads/{file}"
+                    try:
+                        import pandas as pd
+                        df = pd.read_csv(file_path)
+                        file_context = f"📊 **Analyzing file: {file}**\n"
+                        file_context += f"- Total rows: {len(df)}\n"
+                        file_context += f"- Columns: {', '.join(df.columns.tolist())}\n"
+                        
+                        # Extract unique values for categorical columns
+                        categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
+                        for col in categorical_cols:
+                            unique_vals = df[col].nunique()
+                            if unique_vals <= 20:  # Only show for reasonable cardinality
+                                vals = df[col].unique().tolist()
+                                file_context += f"- Unique {col}: {unique_vals} ({', '.join(map(str, vals[:10]))}{'...' if len(vals) > 10 else ''})\n"
+                        
+                        # For specific questions, explicitly extract key columns
+                        key_columns = ['region', 'product', 'channel', 'sales_rep', 'deal_size_category']
+                        for col in key_columns:
+                            if col in df.columns:
+                                count = df[col].nunique()
+                                vals = df[col].unique().tolist()
+                                file_context += f"- {col.title()} count: {count} (unique: {', '.join(map(str, vals))})\n"
+                        
+                        file_context += f"\n"
+                    except Exception as e:
+                        file_context = f"⚠️ Could not load file {file}: {str(e)}\n"
+                
                 prompt = (
-                    "You are a concise data analyst.\n"
-                    "Rules: Use only the provided context, keep numeric values exact, and do not invent facts.\n"
-                    "Return exactly 2 bullet insights with numbers and one short recommendation.\n\n"
-                    f"Context:\n{context or 'No external context provided.'}\n\n"
-                    f"Question: {query}\n"
+                    "You are a precise data analyst. CRITICAL INSTRUCTIONS:\n"
+                    "1. The data context is ALWAYS provided above\n"
+                    "2. ALWAYS look for the answer in the DATA CONTEXT provided\n"
+                    "3. Extract EXACT numbers and values from the context\n"
+                    "4. Never say 'data does not provide' if the information is in the context above\n"
+                    "5. Answer the user question directly using only the data context\n\n"
+                    f"DATA CONTEXT:\n{file_context}\n"
+                    f"Additional Context:\n{context or 'None provided.'}\n\n"
+                    f"USER QUESTION: {query}\n\n"
+                    "ANSWER (use exact information from the data context above):"
                 )
+                # DEBUG: Log the prompt being sent
+                print(f"DEBUG: file={file}, context_length={len(file_context)}")
+                print(f"DEBUG: Prompt length: {len(prompt)}")
+                print(f"DEBUG: First 200 chars of file_context: {file_context[:200]}")
+                
                 llm_response = self.llm.invoke(prompt)
-                return getattr(llm_response, "content", str(llm_response))
+                response_text = getattr(llm_response, "content", str(llm_response))
+                print(f"DEBUG: Response length: {len(response_text)}")
+                return response_text
 
             # Retrieve context if specified
             context = ""
